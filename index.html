@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>web2 - My Links</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #134e4a 50%, #1e1b4b);
+    color: #e2e8f0;
+    display: flex; justify-content: center;
+    padding: 30px 16px;
+  }
+  .card {
+    width: 100%; max-width: 480px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 32px 26px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 6px; }
+  .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; }
+  .links { display: flex; flex-direction: column; gap: 12px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px; border-radius: 12px; text-decoration: none;
+    font-size: 1rem; font-weight: 600; color: #fff;
+    background: linear-gradient(90deg, #14b8a6, #6366f1);
+    transition: transform 0.15s, opacity 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); opacity: 0.92; }
+  .status { color: #94a3b8; font-size: 0.92rem; padding: 14px; }
+  .error { color: #fca5a5; }
+  .warn {
+    margin-top: 20px; font-size: 0.8rem; color: #fde68a; text-align: left;
+    background: rgba(250,204,21,0.08); border: 1px solid rgba(250,204,21,0.25);
+    padding: 10px 12px; border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>My Links</h1>
+  <p class="sub">Keela irukkura button-la click panni link open pannunga.</p>
+
+  <div class="links" id="links">
+    <div class="status">Loading...</div>
+  </div>
+
+  <div class="warn">
+    ⚠️ Therinja link-a mattum open pannunga. Unknown site-a irundha careful-a irunga.
+  </div>
+</div>
+
+<script>
+  // web1 repo-la irukkura links.json file-oda raw link
+  const DATA_URL = "https://raw.githubusercontent.com/sathishsanthosh831-web/web1/main/links.json";
+
+  const container = document.getElementById("links");
+
+  function cleanUrl(value) {
+    try {
+      const u = new URL(value);
+      return (u.protocol === "http:" || u.protocol === "https:") ? u.href : null;
+    } catch { return null; }
+  }
+
+  function showMessage(text, isError) {
+    container.innerHTML = "";
+    const div = document.createElement("div");
+    div.className = "status" + (isError ? " error" : "");
+    div.textContent = text;
+    container.appendChild(div);
+  }
+
+  async function loadLinks() {
+    try {
+      // Cache-busting so latest update varum
+      const res = await fetch(DATA_URL + "?t=" + Date.now());
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const items = await res.json();
+
+      if (!Array.isArray(items) || items.length === 0) {
+        showMessage("Innum links illai.", false);
+        return;
+      }
+
+      container.innerHTML = "";
+      items.forEach((item) => {
+        const url = cleanUrl(item.link || "");
+        if (!url) return;
+        const a = document.createElement("a");
+        a.className = "btn";
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.textContent = item.name || url;
+        container.appendChild(a);
+      });
+    } catch (err) {
+      showMessage("Links load aagala. web1 repo-la links.json irukkanuma check pannunga.", true);
+    }
+  }
+
+  loadLinks();
+</script>
+
+</body>
+</html>
